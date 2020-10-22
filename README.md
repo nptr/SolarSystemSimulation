@@ -3,7 +3,7 @@
 "Solar System Simulation", despite the name, is not really a simulation, but only animated and serves me as computer graphics playground. It started as university project with fixed pipeline OpenGL which I evolved further in the course and later in my free time.<br>
 
 
-![Some Snapshots](https://www.dropbox.com/s/2l66v9nm9448lcx/Snapshots.png?dl=1)
+![Some Snapshots](https://user-images.githubusercontent.com/5485569/96901273-57c1d180-1493-11eb-8456-9f4e84456c9b.png)
 
 Now it features a variety of things:
 + Programmable Pipeline (w/ OpenGL 3.3)
