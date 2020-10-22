@@ -1,0 +1,206 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Ressourcendateien">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="GraphicsFramework">
+      <UniqueIdentifier>{aecfe435-e7f3-4103-95c5-efa236756b5e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ComponentEntitySystem">
+      <UniqueIdentifier>{b7ef3fb9-e886-4c01-a127-5ae43f49e4cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader">
+      <UniqueIdentifier>{3aa109d3-867b-4368-9bea-fe5ceb415278}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ImGui">
+      <UniqueIdentifier>{78e5a228-5f2e-4a01-9c89-72aba84f00bb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="jge\Camera.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\LightSource.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Measurement.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Mesh.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Model.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Scene.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\ShaderProgram.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="PlanetMovementSystem.cpp">
+      <Filter>ComponentEntitySystem</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\RenderPipeline.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Memory.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Texture.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="gl_core_3_3.c" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="imgui\imgui.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_demo.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui\imgui_draw.cpp">
+      <Filter>ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
+    <ClCompile Include="GpuInfo.cpp" />
+    <ClCompile Include="jge\Util.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+    <ClCompile Include="jge\Framebuffer.cpp">
+      <Filter>GraphicsFramework</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="jge\Camera.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\LightSource.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Measurement.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Mesh.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Model.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Scene.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\ShaderProgram.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\TransparencySorter.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="PlanetMovementSystem.h">
+      <Filter>ComponentEntitySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="PlanetInfo.h">
+      <Filter>ComponentEntitySystem</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Framebuffer.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\RenderPipeline.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\BlurCubemap.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Memory.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Texture.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+    <ClInclude Include="stb_image.h" />
+    <ClInclude Include="gl_core_3_3.h" />
+    <ClInclude Include="PlanetData.h" />
+    <ClInclude Include="imgui\imconfig.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\imgui_internal.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\stb_rect_pack.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\stb_textedit.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui\stb_truetype.h">
+      <Filter>ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="GpuInfo.h" />
+    <ClInclude Include="resource.h">
+      <Filter>Ressourcendateien</Filter>
+    </ClInclude>
+    <ClInclude Include="jge\Util.h">
+      <Filter>GraphicsFramework</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SolarSystemSimulation++.rc">
+      <Filter>Ressourcendateien</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\basic.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\basic2D.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\blend.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\gaussBlur3D.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\gaussBlur9x1.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\master.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\masterOptimised.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\skybox.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\skybox.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\solidColor.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\stars.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\stars.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\text.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\text.vert">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\vsm.frag">
+      <Filter>Shader</Filter>
+    </None>
+    <None Include="shader\vsm.vert">
+      <Filter>Shader</Filter>
+    </None>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,170 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FC4D035D-B4D3-43D9-B64C-8533631FC5F5}</ProjectGuid>
+    <RootNamespace>SolarSystemSimulation</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <DisableSpecificWarnings>4201;4100;4310;4800</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>../../libs</AdditionalIncludeDirectories>
+      <ForcedIncludeFiles>Memory.h</ForcedIncludeFiles>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>opengl32.lib;glfw3_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/NODEFAULTLIB:"MSVCRT" /NODEFAULTLIB:"LIBCMT %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalLibraryDirectories>../../libs/glfw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <CompileAs>CompileAsCpp</CompileAs>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <DisableSpecificWarnings>4201;4100;4310;</DisableSpecificWarnings>
+      <AdditionalIncludeDirectories>../../libs</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>opengl32.lib;glfw3_mt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../libs/glfw;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateWindowsMetadata>false</GenerateWindowsMetadata>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="gl_core_3_3.c" />
+    <ClCompile Include="GpuInfo.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui_impl_glfw_gl3.cpp" />
+    <ClCompile Include="jge\Camera.cpp" />
+    <ClCompile Include="jge\Framebuffer.cpp" />
+    <ClCompile Include="jge\LightSource.cpp" />
+    <ClCompile Include="jge\Measurement.cpp" />
+    <ClCompile Include="jge\Memory.cpp" />
+    <ClCompile Include="jge\Mesh.cpp" />
+    <ClCompile Include="jge\Model.cpp" />
+    <ClCompile Include="jge\RenderPipeline.cpp" />
+    <ClCompile Include="jge\Scene.cpp" />
+    <ClCompile Include="jge\ShaderProgram.cpp" />
+    <ClCompile Include="jge\Texture.cpp" />
+    <ClCompile Include="jge\Util.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="PlanetMovementSystem.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GpuInfo.h" />
+    <ClInclude Include="imgui\imconfig.h" />
+    <ClInclude Include="imgui\imgui.h" />
+    <ClInclude Include="imgui\imgui_internal.h" />
+    <ClInclude Include="imgui\stb_rect_pack.h" />
+    <ClInclude Include="imgui\stb_textedit.h" />
+    <ClInclude Include="imgui\stb_truetype.h" />
+    <ClInclude Include="imgui_impl_glfw_gl3.h" />
+    <ClInclude Include="jge\BlurCubemap.h" />
+    <ClInclude Include="jge\Framebuffer.h" />
+    <ClInclude Include="jge\Memory.h" />
+    <ClInclude Include="jge\RenderPipeline.h" />
+    <ClInclude Include="jge\Texture.h" />
+    <ClInclude Include="jge\Util.h" />
+    <ClInclude Include="gl_core_3_3.h" />
+    <ClInclude Include="jge\Camera.h" />
+    <ClInclude Include="jge\LightSource.h" />
+    <ClInclude Include="jge\Measurement.h" />
+    <ClInclude Include="jge\Mesh.h" />
+    <ClInclude Include="jge\Model.h" />
+    <ClInclude Include="jge\Scene.h" />
+    <ClInclude Include="jge\ShaderProgram.h" />
+    <ClInclude Include="jge\TransparencySorter.h" />
+    <ClInclude Include="PlanetData.h" />
+    <ClInclude Include="PlanetInfo.h" />
+    <ClInclude Include="PlanetMovementSystem.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="stb_image.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SolarSystemSimulation++.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\basic.vert" />
+    <None Include="shader\basic2D.vert" />
+    <None Include="shader\blend.frag" />
+    <None Include="shader\gaussBlur3D.frag" />
+    <None Include="shader\gaussBlur9x1.frag" />
+    <None Include="shader\master.vert" />
+    <None Include="shader\masterOptimised.frag" />
+    <None Include="shader\skybox.frag" />
+    <None Include="shader\skybox.vert" />
+    <None Include="shader\solidColor.frag" />
+    <None Include="shader\stars.frag" />
+    <None Include="shader\stars.vert" />
+    <None Include="shader\text.frag" />
+    <None Include="shader\text.vert" />
+    <None Include="shader\vsm.frag" />
+    <None Include="shader\vsm.vert" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
