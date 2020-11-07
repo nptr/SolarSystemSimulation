@@ -170,6 +170,7 @@ namespace jge
 		glDrawArrays(m_drawType, 0, m_vertices.size());
 	}
 
+    // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 	void Mesh::GenerateTangents()
 	{
 		for (unsigned int i = 0; i < m_vertices.size(); i += 3)
@@ -188,8 +189,6 @@ namespace jge
 			glm::vec3 inout_tangent = (deltaPos1 * deltaUV2.y - deltaPos2 * deltaUV1.y)*r;
 			glm::vec3 inout_bitangent = (deltaPos2 * deltaUV1.x - deltaPos1 * deltaUV2.x)*r;
 
-			// Set the same inout_tangent for all three vertices of the triangle.
-			// They will be merged later, in vboindexer.cpp			
 			m_tangents.push_back(inout_tangent);
 			m_tangents.push_back(inout_tangent);
 			m_tangents.push_back(inout_tangent);
@@ -199,7 +198,7 @@ namespace jge
 			m_bitangents.push_back(inout_bitangent);
 		}
 
-		// See "Going Further"
+        // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/#going-further
 		for (unsigned int i = 0; i < m_vertices.size(); i += 1)
 		{
 			glm::vec3 & n = (m_normals)[i];

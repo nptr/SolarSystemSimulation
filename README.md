@@ -1,23 +1,24 @@
 # Solar System Simulation
 
-"Solar System Simulation", despite the name, is not really a simulation, but only animated and serves me as computer graphics playground. It started as university project with fixed pipeline OpenGL which I evolved further in the course and later in my free time.<br>
+"Solar System Simulation", despite the name, is not really a physics simulation but only animated and serves me as computer graphics playground. It started as university project with fixed pipeline OpenGL which I evolved further in the course and later in my free time.<br>
 
 
 ![Some Snapshots](https://user-images.githubusercontent.com/5485569/96901273-57c1d180-1493-11eb-8456-9f4e84456c9b.png)
 
-Now it features a variety of things:
-+ Programmable Pipeline (w/ OpenGL 3.3)
+Now it uses the programmable pipeline (OpenGL 3.3) and features a variety of things:
 + Variance Shadow Mapping (VSM)
-+ Point-, Spot- and Directional Lights (all with VSM)
++ Point-, Spot- and Directional Lights
 + Phong Reflection Model
 + Normal & Specular Mapping
 + Discrete Level-of-Detail
 + Multisample Anti-Aliasing
 + Glow Effects using Gaussian Blur
-+ Correct Transparency
++ Correct Transparency (disabled)
 + Ray-Sphere Intersection
 + Sky "Box" without geometry
 + Gamma Awareness
+
+Sizes and distances are not to scale obviously. Orbital period, orbital inclination and axial tilt should be more or less.
 
 ## Usage
 | Action           | Keys        |
@@ -29,7 +30,7 @@ Now it features a variety of things:
 | Fullscreen       | F11         |
 
 ## Building
-Use the Visual Studio 2013 C++ solution. No platform specific code is used (directly), so it might<br> run under Linux with only reasonable amount of work required. Dependencies (not included) are:
+Use the Visual Studio 2017 C++ solution. No platform specific code is used (directly), so it _might_<br> compile for Linux with only reasonable amount of work required. Not included dependencies are:
 + GLFW (Linking required) ([Github](https://github.com/glfw/glfw))([WWW](https://www.glfw.org/))
 + GLM (Header only) ([Github](https://github.com/g-truc/glm))([WWW](https://glm.g-truc.net/))
 
