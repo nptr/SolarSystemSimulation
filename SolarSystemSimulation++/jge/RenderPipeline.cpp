@@ -280,7 +280,7 @@ void RenderPipeline::DrawShadowCastingModels(ShaderProgram* shader)
 
 void RenderPipeline::DrawModel(ShaderProgram& shader, Model& m, int lvl)
 {
-	// bind texture 1 (multitextuing)
+	// bind texture 1 (multitexturing)
 	bool useMultitexturing = m.textures[1] > 0;
 	shader.UpdateUniform(UF_USETEX[1], useMultitexturing);
 	if (useMultitexturing)
@@ -383,7 +383,7 @@ void RenderPipeline::DrawNonShadowCastingModels(ShaderProgram* defaultShader)
         }
 
         int lvl = scene->DetermineLODLevel(*m);
-        DrawModelMinimal(*currentShader, *m, lvl);
+        DrawModel(*currentShader, *m, lvl);
 
         lastShader = currentShader;
 	}

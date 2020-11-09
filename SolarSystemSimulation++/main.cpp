@@ -54,6 +54,7 @@ const float SIMULATION_DELTA = 1.0f / SIMULATION_FREQ;
 float simSpeeds[] =
 {
 	0.0f,
+    0.03f / SIMULATION_FREQ,
 	0.1f / SIMULATION_FREQ,
 	1.0f / SIMULATION_FREQ,
 	5.0f / SIMULATION_FREQ,
@@ -62,7 +63,6 @@ float simSpeeds[] =
 	200.0f / SIMULATION_FREQ,
 	400.0f / SIMULATION_FREQ,
 	800.0f / SIMULATION_FREQ,
-	1200.0f / SIMULATION_FREQ,
 };
 double simulationTime;
 float simulationTick = simSpeeds[2];
@@ -153,13 +153,15 @@ void OnKeyPressedCallback(GLFWwindow* window, int key, int scancode, int action,
 
 /**
  * Called when the cursor position changed. Triggers also on hidden cursors!
- * The function updates the camera based on the cursor movement
+ * The function updates the camera based on the cursor movement.
  */
 void OnCursorPosChangedCallback(GLFWwindow* window, double x, double y)
 {
-	// This variable is hack to stop glfwSetCursorPos from triggering an event callback to Mouse(...)
-	// This avoids it being called recursively and hanging up the event loop
-	static bool just_warped = false;
+    // This variable is a hack to prevent the initial camera jump when the cursor isn't caught yet
+    static bool caught_cursor = false;
+    // This variable is a hack to stop glfwSetCursorPos from triggering OnCursorPosChangedCallback() recursively.
+    // Maybe using GLFW_CURSOR_DISABLED is the correct approach?
+    static bool just_warped = false;
 
 	if (just_warped) {
 		just_warped = false;
@@ -170,17 +172,18 @@ void OnCursorPosChangedCallback(GLFWwindow* window, double x, double y)
 		int dx = (int)x - windowWidth / 2;
 		int dy = (int)y - windowHeight / 2;
 
-		if (dx) {
+		if (caught_cursor) {
 			camera->RotateYaw((float)dx);
-		}
-
-		if (dy) {
-			camera->RotatePitch((float)-dy);
+            camera->RotatePitch((float)-dy);
 		}
 
 		just_warped = true;
+        caught_cursor = true;
 		glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
 	}
+    else {
+        caught_cursor = false;
+    }
 }
 
 
@@ -428,8 +431,8 @@ void InitGraphics()
 	GLuint defaultVShader = LoadShader(GL_VERTEX_SHADER, "shader\\master.vert");
 	GLuint defaultFShader = LoadShader(GL_FRAGMENT_SHADER, "shader\\masterOptimised.frag");
 	lightingShader.Create(defaultVShader, defaultFShader);
-	lightingShader.RegisterUniform("useTexture[1]");	// uniform doesn't count as active, so register it manually
-	lightingShader.RegisterUniform("texTransform[1]");	// uniform doesn't count as active, so register it manually
+	lightingShader.RegisterUniform("useTexture[1]");	// uniform doesn't count as active, so register it manually?
+	lightingShader.RegisterUniform("texTransform[1]");	// uniform doesn't count as active, so register it manually?
 
 	GLuint shadowVShader = LoadShader(GL_VERTEX_SHADER, "shader\\vsm.vert");
 	GLuint shadowFShader = LoadShader(GL_FRAGMENT_SHADER, "shader\\vsm.frag");

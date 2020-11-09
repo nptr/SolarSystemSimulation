@@ -115,10 +115,10 @@ float chebyshevUpperBound(samplerCube cube,float distance, vec3 dir)
 }
 
 // Calculate the shadow factor for a light
-float calculateShadowFactor(int index)
+float calculateShadowFactor(samplerCube cube, lightSource light)
 {
-	vec3 fragmentToLightWorld = (lights[index].position - inout_positionWorld).xyz;
-	return chebyshevUpperBound(shadowCubes[index], length(fragmentToLightWorld), -fragmentToLightWorld);
+	vec3 fragmentToLightWorld = (light.position - inout_positionWorld).xyz;
+	return chebyshevUpperBound(cube, length(fragmentToLightWorld), -fragmentToLightWorld);
 }
 
 
@@ -150,8 +150,6 @@ void pointOrSpotLight(in int i, in vec3 N, in vec3 V, in vec3 D, in float shinin
 		// vec3 H = normalize(L + E);
         // float pf = pow(max(dot(N,H), 0.0), shininess);
 
-		shadowFactors[i] = calculateShadowFactor(i);
-
 		diffuse  += lights[i].diffuse  * attenuation * cosAngleIncidence * att2 * shadowFactors[i];
 		specular += lights[i].specular * attenuation * pf * shadowFactors[i] * spec;
 	}
@@ -176,6 +174,20 @@ void directionalLight(in int i, in vec3 N, in vec3 V, in vec3 D, in float shinin
 
 void calculateLighting(in int numLights, in vec3 N, in vec3 V, in vec3 D, in float shininess, in float spec, inout vec4 ambient, inout vec4 diffuse, inout vec4 specular)
 {
+	// 'error: sampler arrays indexed with non-constant expressions are forbidden in GLSL 1.30 and later'
+	if(numLights > 0) {
+		shadowFactors[0] = calculateShadowFactor(shadowCubes[0], lights[0]);
+	}
+	if(numLights > 1) {
+		shadowFactors[1] = calculateShadowFactor(shadowCubes[1], lights[1]);
+	}
+	if(numLights > 2) {
+		shadowFactors[2] = calculateShadowFactor(shadowCubes[2], lights[2]);
+	}
+	if(numLights > 3) {
+		shadowFactors[3] = calculateShadowFactor(shadowCubes[3], lights[3]);
+	}
+
     for (int i = 0; i < numLights; i++)
     {
 		if (lights[i].position.w == 0.0)
