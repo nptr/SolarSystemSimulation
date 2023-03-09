@@ -11,36 +11,40 @@ namespace jge
 	public:
 		static void SortTrianglesByDistanceToCamera(const glm::vec3& cameraPos, Mesh* mesh, const glm::mat4& modelMatrix)
 		{
-			std::vector<glm::vec3>* verts = mesh->GetVertices();
-			std::vector<glm::vec2>* uvs = mesh->GetTexCoords2D();
-			std::vector<glm::vec3>* normals = mesh->GetNormals();
+			auto& verts = mesh->GetVertices();
+			auto& uvs = mesh->GetTexCoords2D();
+			auto& normals = mesh->GetNormals();
 
 			std::vector<Triangle> triangles;
 
-			for (unsigned int i = 0; i < verts->size(); i += 3)
+			for (unsigned int i = 0; i < verts.size(); i += 3)
 			{
-				Triangle t = Triangle((*verts)[i], (*verts)[i + 1], (*verts)[i + 2], (*uvs)[i], (*uvs)[i + 1], (*uvs)[i + 2], (*normals)[i], (*normals)[i + 1], (*normals)[i + 2], modelMatrix);
+				Triangle t = Triangle(
+					verts[i], verts[i + 1], verts[i + 2], 
+					uvs[i], uvs[i + 1], uvs[i + 2], 
+					normals[i], normals[i + 1], normals[i + 2], 
+					modelMatrix);
 				triangles.push_back(t);
 			}
 
 			std::sort(triangles.begin(), triangles.end(), CompareTriangleDistanceStruct(cameraPos));
 
-			verts->clear();
-			uvs->clear();
-			normals->clear();
+			verts.clear();
+			uvs.clear();
+			normals.clear();
 			for (unsigned int i = 0; i < triangles.size(); i++)
 			{
-				verts->push_back(triangles[i].verts[0]);
-				verts->push_back(triangles[i].verts[1]);
-				verts->push_back(triangles[i].verts[2]);
+				verts.push_back(triangles[i].verts[1]);
+				verts.push_back(triangles[i].verts[0]);
+				verts.push_back(triangles[i].verts[2]);
 
-				uvs->push_back(triangles[i].uvs[0]);
-				uvs->push_back(triangles[i].uvs[1]);
-				uvs->push_back(triangles[i].uvs[2]);
+				uvs.push_back(triangles[i].uvs[0]);
+				uvs.push_back(triangles[i].uvs[1]);
+				uvs.push_back(triangles[i].uvs[2]);
 
-				normals->push_back(triangles[i].normals[0]);
-				normals->push_back(triangles[i].normals[1]);
-				normals->push_back(triangles[i].normals[2]);
+				normals.push_back(triangles[i].normals[0]);
+				normals.push_back(triangles[i].normals[1]);
+				normals.push_back(triangles[i].normals[2]);
 			}
 		}
 

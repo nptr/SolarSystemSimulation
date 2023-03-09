@@ -5,14 +5,14 @@
 
 namespace jge
 {
-	enum LightComponent
+	enum class LightComponent
 	{
 		AMBIENT = 0,
 		DIFFUSE = 1,
 		SPECULAR = 2
 	};
 
-	enum LightType
+	enum class LightType
 	{
 		SPOT = 0,
 		DIRECTIONAL = 1,

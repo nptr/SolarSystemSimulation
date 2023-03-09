@@ -6,6 +6,7 @@
 #include <glm/gtc/type_ptr.hpp>		// For Uniform get,set
 
 #include <unordered_map>
+#include <string>
 
 namespace jge
 {
@@ -22,7 +23,7 @@ namespace jge
 		bool Create(GLuint vertShader, GLuint fragShader);
 		bool IsValid() const;
 		void UseProgram();
-		bool RegisterUniform(const char* name);
+		bool RegisterUniform(const std::string& name);
 
 		void UpdateUniform(const std::string& name, int i);
 		void UpdateUniform(const std::string& name, float f);

@@ -58,9 +58,26 @@ const std::string umapSpotDirection[] = { "lights[0].spotDirection", "lights[1].
 #define MSAA_SAMPLES 4
 
 RenderPipeline::RenderPipeline(Scene* _scene)
-	: shadowmapSize(768)
+	: shadowShader(nullptr)
+	, lightingShader(nullptr)
+	, blurShader(nullptr)
+	, blendShader(nullptr)
+	, skyboxShader(nullptr)
+	, glowmapShader(nullptr)
+	, starShader(nullptr)
+	, sceneW(0), sceneH(0)
+	, shadowmapSize(768)
+	, glowW(0), glowH(0)
 	, scene(_scene)
 	, brightness(60)
+	, sceneFramebuffer()
+	, glowFramebuffer()
+	, blurFramebuffer()
+	, msaaResultFramebuffer()
+	, timeElapsedShadowPass(0)
+	, timeElapsedNormalPass(0)
+	, timeElapsedMSAA(0)
+	, timeElapsedPost(0)
 {
 	// for the multisampled scene framebuffer
 	glEnable(GL_MULTISAMPLE);

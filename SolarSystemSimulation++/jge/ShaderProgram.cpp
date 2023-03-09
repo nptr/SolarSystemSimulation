@@ -1,5 +1,6 @@
 #include "ShaderProgram.h"
 #include <stdio.h>					// For reading the shader files
+#include <stdexcept>
 
 namespace jge
 {
@@ -76,9 +77,9 @@ namespace jge
 		//printf("\n");
 	}
 
-	bool ShaderProgram::RegisterUniform(const char* name)
+	bool ShaderProgram::RegisterUniform(const std::string& name)
 	{
-		GLuint location = glGetUniformLocation(m_programId, name);
+		GLuint location = glGetUniformLocation(m_programId, name.c_str());
 		if (location >= 0)
 		{
 			m_uniformMap[name] = location;

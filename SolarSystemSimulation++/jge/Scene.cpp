@@ -16,6 +16,8 @@ namespace jge
 		: enableSorting(true)
 		, lodLevel1Distance(30.0f)
 		, lodLevel2Distance(60.0f)
+		, camera(nullptr)
+		, skyBoxTexture(0)
 	{
 	}
 

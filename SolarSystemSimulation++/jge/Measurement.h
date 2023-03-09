@@ -8,6 +8,7 @@ namespace jge
 		void Tick();
 		int GetFPS() const;
 		float GetTimeForFrame() const;
+
 	private:
 		double begin;
 		double current;

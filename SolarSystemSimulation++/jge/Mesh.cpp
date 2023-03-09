@@ -6,6 +6,20 @@ using namespace glm;
 namespace jge
 {
 	Mesh::Mesh()
+		: m_vertexArrayID(0)
+		, m_drawType(0)
+		, m_usageType(0)
+		, m_vertices()
+		, m_uvs()
+		, m_uvws()
+		, m_normals()
+		, m_tangents()
+		, m_bitangents()
+		, m_vertexbuffer(0)
+		, m_uvbuffer(0)
+		, m_normalbuffer(0)
+		, m_tangentbuffer(0)
+		, m_bitangentbuffer(0)
 	{
 	}
 
@@ -119,53 +133,23 @@ namespace jge
 		}
 	}
 
-	vector<vec3>* Mesh::GetVertices()
-	{
-		return &m_vertices;
-	}
-
-	vector<vec2>* Mesh::GetTexCoords2D()
-	{
-		return &m_uvs;
-	}
-
-	vector<vec3>* Mesh::GetTexCoords3D()
-	{
-		return &m_uvws;
-	}
-
-	vector<vec3>* Mesh::GetNormals()
-	{
-		return &m_normals;
-	}
-
-	vector<vec3>* Mesh::GetTangents()
-	{
-		return &m_tangents;
-	}
-
-	vector<vec3>* Mesh::GetBiTangents()
-	{
-		return &m_bitangents;
-	}
-
 	GLuint Mesh::GetVAO() const
 	{
 		return m_vertexArrayID;
 	}
 
-	void Mesh::Draw(GLenum mode)
+	void Mesh::Draw(GLenum mode) const
 	{
 		glBindVertexArray(m_vertexArrayID);
 		glDrawArrays(mode, 0, m_vertices.size());
 	}
 
-	void Mesh::Draw()
+	void Mesh::Draw() const
 	{
 		Draw(m_drawType);
 	}
 
-	void Mesh::DrawNoBind()
+	void Mesh::DrawNoBind() const
 	{
 		glDrawArrays(m_drawType, 0, m_vertices.size());
 	}
@@ -173,7 +157,7 @@ namespace jge
     // http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 	void Mesh::GenerateTangents()
 	{
-		for (unsigned int i = 0; i < m_vertices.size(); i += 3)
+		for (size_t i = 0; i < m_vertices.size(); i += 3)
 		{
 			// Edges of the triangle : postion delta
 			glm::vec3& v0 = m_vertices[i + 0];

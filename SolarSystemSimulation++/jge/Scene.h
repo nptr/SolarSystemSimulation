@@ -21,8 +21,7 @@ namespace jge
 		// Initial Setup
 		void SetCamera(Camera* c);
 
-		// Add stuff to the scene. Model will be sorted into
-		// apropriate lists.
+		// Add stuff to the scene. Model will be sorted into appropriate lists.
 		void AddLight(LightSource* light);
 		void AddModel(Model* model);
         void RemoveModel(Model*);

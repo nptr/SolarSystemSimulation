@@ -88,21 +88,21 @@ namespace jge
 	{
 		switch (type)
 		{
-			case jge::AMBIENT:
+			case LightComponent::AMBIENT:
 			{
 				m_ambientColor.r = r;
 				m_ambientColor.g = g;
 				m_ambientColor.b = b;
 				m_ambientColor.a = 1.0f;
 			} break;
-			case jge::DIFFUSE:
+			case LightComponent::DIFFUSE:
 			{
 				m_diffuseColor.r = r;
 				m_diffuseColor.g = g;
 				m_diffuseColor.b = b;
 				m_diffuseColor.a = 1.0f;
 			} break;
-			case jge::SPECULAR:
+			case LightComponent::SPECULAR:
 			{
 				m_specularColor.r = r;
 				m_specularColor.g = g;

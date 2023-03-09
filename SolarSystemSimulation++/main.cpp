@@ -27,11 +27,15 @@
 	#include "jge/Memory.h"
 #endif
 
+#include <stdexcept>
+#include <string>
+	
+
 using namespace jge;
 using namespace glm;
 
-#define NEAR_PLANE 0.15f
-#define FAR_PLANE 250.0f
+const float NEAR_PLANE = 0.15f;
+const float FAR_PLANE = 250.0f;
 
 GLFWwindow* window;
 bool isFullscreen = false;
@@ -103,9 +107,9 @@ void InitData();
 void Update(double simTime);
 void DoPlanetSelection(glm::vec3 rayOrigin, glm::vec3 rayDirection);
 
-GLuint LoadShader(GLenum type, const char* path);
-GLuint LoadTexture(const char* file);
-GLuint LoadTexture(const char* file, GLuint wrapMode, bool srgbInternal);
+GLuint LoadShader(GLenum type, const std::string& file);
+GLuint LoadTexture(const std::string& file);
+GLuint LoadTexture(const std::string& file, GLuint wrapMode, bool srgbInternal);
 void LoadStarCatalog(Mesh& m);
 
 /**
@@ -188,8 +192,7 @@ void OnCursorPosChangedCallback(GLFWwindow* window, double x, double y)
 
 
 /**
- * Called when a mouse button was pressed
- * on ESC (see ProcessInput())
+ * Called when a mouse button was pressed on ESC (see ProcessInput())
  */
 void OnMouseButtonClick(GLFWwindow* window, int button, int action, int mod)
 {
@@ -862,65 +865,56 @@ void DoPlanetSelection(glm::vec3 rayOrigin, glm::vec3 rayDirection)
 
 //////////////////////////////////////////// UTILITY FUNCTIONS //////////////////////////////////////////////
 
-void* ReadEntireFile(const char* filename, int* length)
+std::string ReadEntireFile(const std::string& filename)
 {
-	void* buffer;
-	FILE* f = fopen(filename, "r");
-
+	FILE* f = fopen(filename.c_str(), "r");
 	if (!f)
 	{
-		char buffer[256];
-		sprintf(buffer,"Cannot open or find %s", filename);
-		throw std::runtime_error(buffer);
+		throw std::runtime_error("Cannot open or find " + filename + ".");
 	}
-
 	
 	fseek(f, 0, SEEK_END);
-	*length = ftell(f);
+	long length = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
-	buffer = malloc(*length + 1);
-	*length = fread(buffer, 1, *length, f);
-	fclose(f);
-	((char*)buffer)[*length] = '\0';
+	std::string contents;
+	contents.resize(length);
 
-	return buffer;
+	length = fread(&contents[0], 1, length, f);
+	fclose(f);
+
+	return contents;
 }
 
-GLuint LoadShader(GLenum type, const char* path)
+GLuint LoadShader(GLenum type, const std::string& path)
 {
-	int length;
-	char* data = (char*)ReadEntireFile(path, &length);
+	std::string data = ReadEntireFile(path);
 	try
 	{
-		return ShaderProgram::CreateShader(type, data, length);
+		return ShaderProgram::CreateShader(type, data.c_str(), data.length());
 	}
 	catch (const std::runtime_error& ex)
 	{
-		throw std::runtime_error(std::string(path) + std::string("\r\n") + std::string(ex.what()));
+		throw std::runtime_error(path + "\r\n" + ex.what());
 	}
 }
 
-GLuint LoadTexture(const char* file)
+GLuint LoadTexture(const std::string& file)
 {
 	GLuint tex = Texture::LoadTexture(file);
 	if (tex <= 0)
 	{
-		char buffer[256];
-		sprintf(buffer,"Cannot load texture %s.", file);
-		throw std::runtime_error(buffer);
+		throw std::runtime_error("Cannot load texture " + file + ".");
 	}
 	return tex;
 }
 
-GLuint LoadTexture(const char* file, GLuint wrapMode, bool srgbInternal)
+GLuint LoadTexture(const std::string& file, GLuint wrapMode, bool srgbInternal)
 {
 	GLuint tex = Texture::LoadTexture(file, wrapMode, srgbInternal);
 	if (tex <= 0)
 	{
-		char buffer[256];
-		sprintf(buffer, "Cannot load texture %s.", file);
-		throw std::runtime_error(buffer);
+		throw std::runtime_error("Cannot load texture " + file + ".");
 	}
 	return tex;
 }
@@ -945,11 +939,11 @@ void LoadStarCatalog(Mesh& m)
 
 
     m.Create(GL_POINTS, GL_STATIC_DRAW);
-    std::vector<vec3>* verts = m.GetVertices();
-    std::vector<vec3>* colors = m.GetNormals();
+    std::vector<vec3>& verts = m.GetVertices();
+    std::vector<vec3>& colors = m.GetNormals();
 
-    verts->insert(verts->begin(), (vec3*)vertArray, ((vec3*)vertArray) + numStars);
-    colors->insert(colors->begin(), (vec3*)colorArray, ((vec3*)colorArray) + numStars);
+    verts.insert(verts.begin(), (vec3*)&vertArray[0], ((vec3*)&vertArray[0]) + numStars);
+    colors.insert(colors.begin(), (vec3*)&colorArray[0], ((vec3*)&colorArray[0]) + numStars);
     m.Update();
 
     delete[] vertArray;

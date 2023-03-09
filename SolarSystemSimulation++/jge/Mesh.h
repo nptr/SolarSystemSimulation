@@ -19,20 +19,20 @@ namespace jge
 		void CreateQuad();
 
 		// Provides r/w access to the local mesh data
-		std::vector<glm::vec3>* GetVertices();
-		std::vector<glm::vec2>* GetTexCoords2D();
-		std::vector<glm::vec3>* GetTexCoords3D();
-		std::vector<glm::vec3>* GetNormals();
-		std::vector<glm::vec3>* GetTangents();
-		std::vector<glm::vec3>* GetBiTangents();
+		inline std::vector<glm::vec3>& Mesh::GetVertices() { return m_vertices; }
+		inline std::vector<glm::vec2>& Mesh::GetTexCoords2D() { return m_uvs; }
+		inline std::vector<glm::vec3>& Mesh::GetTexCoords3D() { return m_uvws; }
+		inline std::vector<glm::vec3>& Mesh::GetNormals() { return m_normals; }
+		inline std::vector<glm::vec3>& Mesh::GetTangents() { return m_tangents; }
+		inline std::vector<glm::vec3>& Mesh::GetBiTangents() { return m_bitangents; }
 
 		GLuint GetVAO() const;
 
 		// Uploads the mesh data to the GPU
 		void Update();
 
-		void Draw();
-		void DrawNoBind();
+		void Draw() const;
+		void DrawNoBind() const;
 
 		// Read a Wavefront OBJ file
 		void FromObjectFile(const char* objFile, bool generateTangents = false);
@@ -47,7 +47,7 @@ namespace jge
 		void Attach(GLuint bufferID, int location, int size);
 
 		void GenerateTangents();
-		void Draw(GLenum mode);
+		void Draw(GLenum mode) const;
 
 		GLuint m_vertexArrayID;
 		GLenum m_drawType;

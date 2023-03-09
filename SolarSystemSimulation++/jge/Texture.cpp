@@ -32,7 +32,6 @@ namespace jge
 
 		for (GLuint i = 0; i < 6; i++)
 		{
-			const char* fp = faces[i];
 			data = stbi_load(faces[i], &width, &height, &numComponents, 3);
 			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_SRGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 		}
@@ -47,18 +46,18 @@ namespace jge
 		return textureID;
 	}
 
-	GLuint Texture::LoadTexture(const char* file)
+	GLuint Texture::LoadTexture(const std::string& file)
 	{
 		return LoadTexture(file, GL_REPEAT, true);
 	}
 
-	GLuint Texture::LoadTexture(const char* file,  GLuint wrapMode, bool srgbInternal)
+	GLuint Texture::LoadTexture(const std::string& file,  GLuint wrapMode, bool srgbInternal)
 	{
 		int width;
 		int height;
 		int numComponents;
 
-		stbi_uc*  data = stbi_load(file, &width, &height, &numComponents, 0);
+		stbi_uc*  data = stbi_load(file.c_str(), &width, &height, &numComponents, 0);
 		if (data != NULL)
 		{
 			GLuint textureID;
