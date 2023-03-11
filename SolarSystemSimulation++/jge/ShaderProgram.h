@@ -10,42 +10,42 @@
 
 namespace jge
 {
-	/**
+    /**
     * Simple abstraction of a OpenGL shader program consisting of vertex and fragmentshader.
     * Sharing single shaders across shaderprograms is not supported.
     */
-	class ShaderProgram
-	{
-	public:
-		ShaderProgram();
-		~ShaderProgram();
+    class ShaderProgram
+    {
+    public:
+        ShaderProgram();
+        ~ShaderProgram();
 
-		bool Create(GLuint vertShader, GLuint fragShader);
-		bool IsValid() const;
-		void UseProgram();
-		bool RegisterUniform(const std::string& name);
+        bool Create(GLuint vertShader, GLuint fragShader);
+        bool IsValid() const;
+        void UseProgram();
+        bool RegisterUniform(const std::string& name);
 
-		void UpdateUniform(const std::string& name, int i);
-		void UpdateUniform(const std::string& name, float f);
-		void UpdateUniform(const std::string& name, const glm::vec2& vec2);
-		void UpdateUniform(const std::string& name, const glm::vec3& vec3);
-		void UpdateUniform(const std::string& name, const glm::mat3& mat3);
-		void UpdateUniform(const std::string& name, const glm::vec4& vec4);
-		void UpdateUniform(const std::string& name, const glm::mat4& mat4);
+        void UpdateUniform(const std::string& name, int i);
+        void UpdateUniform(const std::string& name, float f);
+        void UpdateUniform(const std::string& name, const glm::vec2& vec2);
+        void UpdateUniform(const std::string& name, const glm::vec3& vec3);
+        void UpdateUniform(const std::string& name, const glm::mat3& mat3);
+        void UpdateUniform(const std::string& name, const glm::vec4& vec4);
+        void UpdateUniform(const std::string& name, const glm::mat4& mat4);
 
-		static GLuint CreateShader(GLenum type, const char* source, unsigned int length);
-	private:
-		void RegisterUniforms();
-		
-		GLuint m_programId;
-		GLuint m_vertexShaderId;
-		GLuint m_fragmentShaderId;
+        static GLuint CreateShader(GLenum type, const char* source, unsigned int length);
+    private:
+        void RegisterUniforms();
 
-		bool m_isInitialized;
-		bool m_isValid;
+        GLuint m_programId;
+        GLuint m_vertexShaderId;
+        GLuint m_fragmentShaderId;
 
-		// Cannot use const char ptrs here as they are not treated
-		// as string by the map template. 
-		std::unordered_map<std::string, GLuint> m_uniformMap;
-	};
+        bool m_isInitialized;
+        bool m_isValid;
+
+        // Cannot use const char ptrs here as they are not treated
+        // as string by the map template. 
+        std::unordered_map<std::string, GLuint> m_uniformMap;
+    };
 }

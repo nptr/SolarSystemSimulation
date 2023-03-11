@@ -6,12 +6,11 @@
 // If you are new to ImGui, see examples/README.txt and documentation at the top of imgui.cpp.
 // https://github.com/ocornut/imgui
 
-#include "imgui\imgui.h"
+#include "imgui/imgui.h"
 #include "imgui_impl_glfw_gl3.h"
 
-
 #include "gl_core_3_3.h"					// OpenGL binding
-#include <glfw/glfw3.h>						// Window creation
+#include <GLFW/glfw3.h>						// Window creation
 #ifdef _WIN32
 #undef APIENTRY
 #define GLFW_EXPOSE_NATIVE_WIN32

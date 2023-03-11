@@ -2,6 +2,6 @@
 
 namespace gpuinfo
 {
-	int GetAvailableMemory();
+    int GetAvailableMemory();
 }
 

@@ -17,119 +17,119 @@
 namespace jge
 {
 
-	Camera::Camera()
-		: m_yaw(0.0f)
-		, m_pitch(0.0f)
-		, m_camMoveSpeed(0.3f)
-		, m_camRotationSpeed(M_PI / 180 * 0.15f)
-		, m_upVector(0.0f, 1.0f, 0.0f)
-	{
-		SetPosition(glm::vec3(0, 0, 0));
-		SetPerspective(1.0f, 1.0f, 250.0f);
-	}
+    Camera::Camera()
+        : m_yaw(0.0f)
+        , m_pitch(0.0f)
+        , m_camMoveSpeed(0.3f)
+        , m_camRotationSpeed(M_PI / 180 * 0.15f)
+        , m_upVector(0.0f, 1.0f, 0.0f)
+    {
+        SetPosition(glm::vec3(0, 0, 0));
+        SetPerspective(1.0f, 1.0f, 250.0f);
+    }
 
-	Camera::~Camera()
-	{
+    Camera::~Camera()
+    {
 
-	}
+    }
 
-	void Camera::Refresh()
-	{
-		// x & y for horz. plane, z for height
-		m_directionVector.x = cos(m_yaw) * cos(m_pitch);
-		m_directionVector.y = sin(m_pitch);
-		m_directionVector.z = sin(m_yaw) * cos(m_pitch);
+    void Camera::Refresh()
+    {
+        // x & y for horz. plane, z for height
+        m_directionVector.x = cos(m_yaw) * cos(m_pitch);
+        m_directionVector.y = sin(m_pitch);
+        m_directionVector.z = sin(m_yaw) * cos(m_pitch);
 
-		m_strafe_lx = cos(m_yaw - M_PI_2);
-		m_strafe_lz = sin(m_yaw - M_PI_2);
+        m_strafe_lx = cos(m_yaw - M_PI_2);
+        m_strafe_lz = sin(m_yaw - M_PI_2);
 
-		m_cameraViewMatrix = glm::lookAt(m_cameraPosition, m_cameraPosition + m_directionVector, m_upVector);
-	}
+        m_cameraViewMatrix = glm::lookAt(m_cameraPosition, m_cameraPosition + m_directionVector, m_upVector);
+    }
 
-	void Camera::SetPosition(const glm::vec3& pos)
-	{
-		m_cameraPosition = pos;
+    void Camera::SetPosition(const glm::vec3& pos)
+    {
+        m_cameraPosition = pos;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::Move(float direction)
-	{
-		float lx = cos(m_yaw)*cos(m_pitch);
-		float ly = sin(m_pitch);
-		float lz = sin(m_yaw)*cos(m_pitch);
+    void Camera::Move(float direction)
+    {
+        float lx = cos(m_yaw) * cos(m_pitch);
+        float ly = sin(m_pitch);
+        float lz = sin(m_yaw) * cos(m_pitch);
 
-		m_cameraPosition.x += direction * m_camMoveSpeed*lx;
-		m_cameraPosition.y += direction * m_camMoveSpeed*ly;
-		m_cameraPosition.z += direction * m_camMoveSpeed*lz;
+        m_cameraPosition.x += direction * m_camMoveSpeed * lx;
+        m_cameraPosition.y += direction * m_camMoveSpeed * ly;
+        m_cameraPosition.z += direction * m_camMoveSpeed * lz;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::Strafe(float direction)
-	{
-		m_cameraPosition.x += direction * m_camMoveSpeed * m_strafe_lx;
-		m_cameraPosition.z += direction * m_camMoveSpeed * m_strafe_lz;
+    void Camera::Strafe(float direction)
+    {
+        m_cameraPosition.x += direction * m_camMoveSpeed * m_strafe_lx;
+        m_cameraPosition.z += direction * m_camMoveSpeed * m_strafe_lz;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::Fly(float direction)
-	{
-		m_cameraPosition.y += direction * m_camMoveSpeed;
+    void Camera::Fly(float direction)
+    {
+        m_cameraPosition.y += direction * m_camMoveSpeed;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::RotateYaw(float strokeIntensity)
-	{
-		m_yaw += m_camRotationSpeed * strokeIntensity;
+    void Camera::RotateYaw(float strokeIntensity)
+    {
+        m_yaw += m_camRotationSpeed * strokeIntensity;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::RotatePitch(float strokeIntensity)
-	{
-		const float limit = 89.0f * M_PI / 180.0f;
+    void Camera::RotatePitch(float strokeIntensity)
+    {
+        const float limit = 89.0f * M_PI / 180.0f;
 
-		m_pitch += m_camRotationSpeed * strokeIntensity;
+        m_pitch += m_camRotationSpeed * strokeIntensity;
 
-		if (m_pitch < -limit)
-			m_pitch = -limit;
+        if (m_pitch < -limit)
+            m_pitch = -limit;
 
-		if (m_pitch > limit)
-			m_pitch = limit;
+        if (m_pitch > limit)
+            m_pitch = limit;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::SetYaw(float angle)
-	{
-		m_yaw = angle;
+    void Camera::SetYaw(float angle)
+    {
+        m_yaw = angle;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::SetPitch(float angle)
-	{
-		m_pitch = angle;
+    void Camera::SetPitch(float angle)
+    {
+        m_pitch = angle;
 
-		Refresh();
-	}
+        Refresh();
+    }
 
-	void Camera::SetMoveSpeed(float moveSpeed)
-	{
-		m_camMoveSpeed = moveSpeed;
-	}
+    void Camera::SetMoveSpeed(float moveSpeed)
+    {
+        m_camMoveSpeed = moveSpeed;
+    }
 
-	void Camera::SetTurnRate(float rotationSpeed)
-	{
-		m_camRotationSpeed = M_PI / 180.0f * rotationSpeed;
-	}
+    void Camera::SetTurnRate(float rotationSpeed)
+    {
+        m_camRotationSpeed = M_PI / 180.0f * rotationSpeed;
+    }
 
-	void Camera::SetPerspective(float ratio, float zNear, float zFar)
-	{
-		m_cameraProjectionMatrix = glm::perspective(glm::radians(50.0f), ratio, zNear, zFar);
-	}
+    void Camera::SetPerspective(float ratio, float zNear, float zFar)
+    {
+        m_cameraProjectionMatrix = glm::perspective(glm::radians(50.0f), ratio, zNear, zFar);
+    }
 
 }

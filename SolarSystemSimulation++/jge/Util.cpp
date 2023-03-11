@@ -2,13 +2,13 @@
 
 using namespace jge;
 
-int Util::RaySphereIntersection(glm::vec3& rayPos, glm::vec3& rayDir, glm::vec3& spherePos, float sphereRadius, float& dist1, float& dist2)
+int Util::RaySphereIntersection(glm::vec3 rayPos, glm::vec3 rayDir, glm::vec3 spherePos, float sphereRadius, float& dist1, float& dist2)
 {
     glm::vec3 o_minus_c = rayPos - spherePos;
 
     float p = glm::dot(rayDir, o_minus_c);
     float q = glm::dot(o_minus_c, o_minus_c) - (sphereRadius * sphereRadius);
-    
+
     float discriminant = (p * p) - q;
     if (discriminant < 0.0f)
     {

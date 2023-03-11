@@ -13,18 +13,18 @@ const GLenum RENDERBUFFER_FREE_MEMORY_ATI = 0x87FD;
 
 namespace gpuinfo
 {
-	int GetAvailableMemory()
-	{
-		int outData[4] = { 0, 0, 0, 0 };
-		glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, outData);
-		glGetError();
+    int GetAvailableMemory()
+    {
+        int outData[4] = { 0, 0, 0, 0 };
+        glGetIntegerv(GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, outData);
+        glGetError();
 
-		if (outData[0] != 0)
-			return outData[0];
+        if (outData[0] != 0)
+            return outData[0];
 
-		glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, outData);
-		glGetError();
+        glGetIntegerv(TEXTURE_FREE_MEMORY_ATI, outData);
+        glGetError();
 
-		return outData[0];
-	}
+        return outData[0];
+    }
 }

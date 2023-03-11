@@ -16,4 +16,4 @@ void main()
 	moment2 += 0.25*(dx*dx+dy*dy);
 
 	out_color = vec4(moment1, moment2, 0.0, 0.0);
-};
+}

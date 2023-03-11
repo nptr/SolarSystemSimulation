@@ -11,4 +11,4 @@ uniform mat4 model;
 void main() {
 	gl_Position = cameraToShadowProjector * model * vec4(in_position, 1.0);
 	vPositionEye  = cameraToShadowView * model * vec4(in_position, 1.0);
-};
+}
