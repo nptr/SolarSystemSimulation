@@ -72,7 +72,7 @@ namespace jge
             std::remove(nonglowingModels.begin(), nonglowingModels.end(), model), nonglowingModels.end());
     }
 
-    void Scene::SetCamera(Camera* c)
+    void Scene::SetCamera(std::shared_ptr<Camera> c)
     {
         camera = c;
     }
@@ -128,8 +128,8 @@ namespace jge
 
     void Scene::SortModelsByDistance()
     {
-        std::sort(transparentModels.begin(), transparentModels.end(), ModelDistanceComparer(camera));
-        std::sort(opaqueModels.begin(), opaqueModels.end(), ModelDistanceComparer(camera));
+        std::sort(transparentModels.begin(), transparentModels.end(), ModelDistanceComparer(camera.get()));
+        std::sort(opaqueModels.begin(), opaqueModels.end(), ModelDistanceComparer(camera.get()));
 
         std::stable_sort(transparentModels.begin(), transparentModels.end(), ShaderComparer());
         std::stable_sort(opaqueModels.begin(), opaqueModels.end(), ShaderComparer());

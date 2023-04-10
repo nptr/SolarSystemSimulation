@@ -8,6 +8,8 @@
 #include "Model.h"
 #include "Framebuffer.h"
 
+#include <memory>
+
 namespace jge
 {
     const int MAX_LIGHTS = 4;
@@ -19,7 +21,7 @@ namespace jge
         ~Scene();
 
         // Initial Setup
-        void SetCamera(Camera* c);
+        void SetCamera(std::shared_ptr<Camera> c);
 
         // Add stuff to the scene. Model will be sorted into appropriate lists.
         void AddLight(LightSource* light);
@@ -52,7 +54,7 @@ namespace jge
         float lodLevel2Distance;
         bool enableSorting;						// Is sorting of triangles enabled?
 
-        Camera* camera;
+        std::shared_ptr<Camera> camera;
         GLuint skyBoxTexture;
 
         // Added models are sorted by their properties to make rendering more efficient

@@ -6,6 +6,7 @@
 #include "Measurement.h"
 
 #include <glm/glm.hpp>
+#include <memory>
 
 namespace jge
 {
@@ -16,7 +17,7 @@ namespace jge
     class RenderPipeline
     {
     public:
-        RenderPipeline(jge::Scene* _scene);
+        RenderPipeline(std::shared_ptr<Scene> _scene);
         ~RenderPipeline();
 
         // Sets the size of the resulting image
@@ -75,7 +76,7 @@ namespace jge
         jge::ShaderProgram* m_skyboxShader;
         jge::ShaderProgram* m_glowmapShader;
         jge::ShaderProgram* m_starShader;
-        jge::Scene* m_scene;
+        std::shared_ptr<Scene> m_scene;
         jge::Mesh m_fullscreenQuad;			// Used in blur ping-pong and skybox rendering
 
         int m_sceneW, m_sceneH;				// Scene size aka. viewport size

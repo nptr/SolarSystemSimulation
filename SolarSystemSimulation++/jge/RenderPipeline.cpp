@@ -57,7 +57,7 @@ const std::string umapSpotDirection[] = { "lights[0].spotDirection", "lights[1].
 
 #define MSAA_SAMPLES 4
 
-RenderPipeline::RenderPipeline(Scene* _scene)
+RenderPipeline::RenderPipeline(std::shared_ptr<Scene> _scene)
     : m_shadowShader(nullptr)
     , m_lightingShader(nullptr)
     , m_blurShader(nullptr)
@@ -230,7 +230,7 @@ void RenderPipeline::UpdateLights()
         m_lightingShader->UpdateUniform(umapConstAtt[i], constAtt);
         m_lightingShader->UpdateUniform(umapLinAtt[i], linearAtt);
         m_lightingShader->UpdateUniform(umapQuadAtt[i], quadricAtt);
-        m_lightingShader->UpdateUniform(umapSpotCosCutoff[i], cutoff);	// shader checks for cos(180°) = -1;
+        m_lightingShader->UpdateUniform(umapSpotCosCutoff[i], cutoff);	// shader checks for cos(180ï¿½) = -1;
         m_lightingShader->UpdateUniform(umapSpotExponent[i], exponent);
         m_lightingShader->UpdateUniform(umapSpotDirection[i], direction);
     }

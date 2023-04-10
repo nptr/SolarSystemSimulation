@@ -7,6 +7,7 @@
 
 enum Bodies
 {
+    bBegin = 0,
     bSun = 0,
     bMercury = 1,
     bVenus = 2,

@@ -1,6 +1,8 @@
 #include "gl_core_3_3.h" // OpenGL binding
 #include <GLFW/glfw3.h>	 // Window handling
 
+#include "SolarSystemSimulation.h"
+
 #include <glm/glm.hpp>					   // Math
 #include <glm/gtx/transform.hpp>		   // 3D transforms
 #include <glm/gtx/matrix_transform_2d.hpp> // 2D transforms
@@ -15,6 +17,7 @@
 #include "jge/Texture.h"
 #include "jge/Util.h"
 
+#include "Logger.h"
 #include "PlanetInfo.h"
 #include "PlanetData.h"
 #include "PlanetMovementSystem.h"
@@ -29,6 +32,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <memory>
 
 using namespace jge;
 using namespace glm;
@@ -36,7 +40,6 @@ using namespace glm;
 const float NEAR_PLANE = 0.15f;
 const float FAR_PLANE = 250.0f;
 
-GLFWwindow* window;
 bool isFullscreen = false;
 int windowWidth = 1280;
 int windowHeight = 800;
@@ -44,12 +47,13 @@ int prevWidth, prevHeight;
 int prevX, prevY;
 
 // Keyboard Map
-bool keyStates[512];
+bool keyStates[256];
 
 // Basic Stuff
-Scene* scene;
-Camera* camera;
-RenderPipeline* pipeline;
+std::shared_ptr<Scene> scene;
+std::unique_ptr<RenderPipeline> pipeline;
+std::shared_ptr<Camera> camera;
+
 
 // Simulation parameters (in Hz)
 const float SIMULATION_FREQ = 60.0f;
@@ -67,7 +71,7 @@ float simSpeeds[] =
     400.0f / SIMULATION_FREQ,
     800.0f / SIMULATION_FREQ,
 };
-double simulationTime;
+double simulationTime = 0.0;
 float simulationTick = simSpeeds[2];
 
 // The Scene Composition
@@ -88,7 +92,6 @@ Mesh lowPolySphere;
 Mesh ringMesh;
 Mesh circleMesh;
 Mesh starMesh;
-Mesh dodecahedronMesh;
 
 // Models (Meshes + Texture)
 Model bodies[12];
@@ -100,11 +103,11 @@ Model stars;
 FrameCounter fpsCounter;
 
 // Forward declarations
-void Display();
-void DisplayUi();
 void InitGraphics();
 void InitData();
-void Update(double simTime);
+
+void DisplayUi();
+
 void DoPlanetSelection(glm::vec3 rayOrigin, glm::vec3 rayDirection);
 
 GLuint LoadShader(GLenum type, const std::string& file);
@@ -112,240 +115,14 @@ GLuint LoadTexture(const std::string& file);
 GLuint LoadTexture(const std::string& file, GLuint wrapMode, bool srgbInternal);
 void LoadStarCatalog(Mesh& m);
 
-/**
- * Called when the windowsize changed.
- * It resizes OpenGLs viewport and adjusts the cameras perspective
- */
-void OnResizeViewport(GLFWwindow* wnd, int width, int height)
+
+bool OnInit(GLFWwindow* window)
 {
-    // 0 can occur on Win+D!
-    if (width <= 0 || height <= 0)
-        return;
-
-    windowWidth = width;
-    windowHeight = height;
-
-    glViewport(0, 0, width, height);
-    camera->SetPerspective(width / (float)height, NEAR_PLANE, FAR_PLANE);
-
-    pipeline->SetSize(width, height);
-}
-
-/**
- * Called when a key was pressed.
- * It saves the key for eventual evaluation by ProcessInput()
- */
-void OnKeyPressedCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    // on fn + [..] key is negative
-    if (key < 0)
-        return;
-
-    // Change simulation tick with 0 - 9 Keys
-    if (action == GLFW_PRESS && key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
-    {
-        simulationTick = simSpeeds[key - GLFW_KEY_0];
-        return;
-    }
-
-    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-        keyStates[key] = true;
-    else
-        keyStates[key] = false;
-}
-
-/**
- * Called when the cursor position changed. Triggers also on hidden cursors!
- * The function updates the camera based on the cursor movement.
- */
-void OnCursorPosChangedCallback(GLFWwindow* window, double x, double y)
-{
-    // This variable is a hack to prevent the initial camera jump when the cursor isn't caught yet
-    static bool caught_cursor = false;
-    // This variable is a hack to stop glfwSetCursorPos from triggering OnCursorPosChangedCallback() recursively.
-    // Maybe using GLFW_CURSOR_DISABLED is the correct approach?
-    static bool just_warped = false;
-
-    if (just_warped)
-    {
-        just_warped = false;
-        return;
-    }
-
-    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
-    {
-        int dx = (int)x - windowWidth / 2;
-        int dy = (int)y - windowHeight / 2;
-
-        if (caught_cursor)
-        {
-            camera->RotateYaw((float)dx);
-            camera->RotatePitch((float)-dy);
-        }
-
-        just_warped = true;
-        caught_cursor = true;
-        glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
-    }
-    else
-    {
-        caught_cursor = false;
-    }
-}
-
-/**
- * Called when a mouse button was pressed on ESC (see ProcessInput())
- */
-void OnMouseButtonClick(GLFWwindow* window, int button, int action, int mod)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-    {
-        double x, y;
-        glfwGetCursorPos(window, &x, &y);
-        double nx = 2.0 * x / windowWidth - 1.0;
-        double ny = 1.0 - 2.0 * y / windowHeight;
-
-        glm::vec4 rayClip = glm::vec4(nx, ny, -1.0f, 1.0f);
-
-        glm::mat4 invProj = glm::inverse(camera->GetProjectionMatrix());
-        glm::vec4 rayView = invProj * rayClip;
-        rayView.z = -1.0f;
-        rayView.w = 0.0f;
-
-        glm::mat4 invView = glm::inverse(camera->GetViewMatrix());
-        glm::vec4 rayWorld4 = invView * rayView;
-        glm::vec3 rayWorld = glm::normalize(glm::vec3(rayWorld4.x, rayWorld4.y, rayWorld4.z));
-
-        DoPlanetSelection(camera->GetPosition(), rayWorld);
-    }
-
-    if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT)
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
-        glfwSetCursorPosCallback(window, OnCursorPosChangedCallback);
-    }
-}
-
-/**
- * Called when the window is closing
- * Here is the place where we (should) release all acquired resources
- */
-void OnWindowClosing(GLFWwindow* window)
-{
-    delete pipeline;
-    delete scene;
-    delete camera;
-    delete sunLight;
-}
-
-/**
- * Handles the pressed keys (multiple presses+handling possible)
- * @param fracLastInput Amount of simulation ticks that passed since
- * the last invocation. This value is framerate independent.
- */
-void ProcessInput(double fracLastInput)
-{
-    float incr = static_cast<float>(fracLastInput);
-
-    if (keyStates['w'] || keyStates['W'])
-    {
-        camera->Move(incr);
-    }
-    if (keyStates['a'] || keyStates['A'])
-    {
-        camera->Strafe(incr);
-    }
-    if (keyStates['s'] || keyStates['S'])
-    {
-        camera->Move(-incr);
-    }
-    if (keyStates['d'] || keyStates['D'])
-    {
-        camera->Strafe(-incr);
-    }
-    if (keyStates['t'] || keyStates['T'])
-    {
-        scene->EnableTriangleSorting(!scene->IsTriangleSortingEnabled());
-    }
-    if (keyStates[GLFW_KEY_F11])
-    {
-        keyStates[GLFW_KEY_F11] = false;
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        if (!isFullscreen)
-        {
-            isFullscreen = true;
-            prevWidth = windowWidth;
-            prevHeight = windowHeight;
-            glfwGetWindowPos(window, &prevX, &prevY);
-
-            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-            glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        }
-        else
-        {
-            isFullscreen = false;
-            glfwSetWindowMonitor(window, NULL, prevX, prevY, prevWidth, prevHeight, 0);
-        }
-    }
-    if (keyStates[GLFW_KEY_ESCAPE])
-    {
-        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        glfwSetCursorPosCallback(window, 0);
-    }
-}
-
-void DisplayError(const char* message, const char* title)
-{
-#ifdef _WIN32
-    MessageBox(NULL, message, title, MB_OK | MB_ICONERROR);
-#else
-    fprintf(stderr, message);
-#endif
-}
-
-/**
- * Entry Point: Manages OpenGL context creation, window creation, gameloop
- */
-int main(void)
-{
-    if (!glfwInit())
-    {
-        DisplayError("Failed to initialize GLFW.\r\nThis should never happen...", "Much Uh-oh :/");
-        return -1;
-    }
-
-    // Create a windowed mode window and a OpenGL context:
-    // OGL 3.3: for ARB_explicit_attrib_location (thats 2010)
-    // OGL 3.2: for ARB_seamless_cube_map
-    // OGL 3.1: not needed, but later for ARB_draw_instanced
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_SRGB_CAPABLE, true);
-    window = glfwCreateWindow(windowWidth, windowHeight, "Solar System Simulation - A Project of Jakob K.", NULL, NULL);
-    if (!window)
-    {
-        DisplayError("Failed to create a window :(\r\nThis should never happen...", "Much Uh-oh :/");
-        glfwTerminate();
-        return -1;
-    }
-
-    // Make the window's context current
-    glfwMakeContextCurrent(window);
-
-    // Initialize the OpenGL Loading Library - MUST BE AFTER glfwMakeContextCurrent()
-    if (ogl_LoadFunctions() == ogl_LOAD_FAILED)
-    {
-        DisplayError("Failed to retrieve function pointers for opengl", "Uh-oh :/");
-        return -1;
-    }
-
-    printf("Renderer: \n%s\n\n", (const char*)glGetString(GL_RENDERER));
-
     // Make the default framebuffer gamma aware
     glEnable(GL_FRAMEBUFFER_SRGB);
 
     // Setup Camera
-    camera = new Camera();
+    camera = std::make_shared<Camera>();
     camera->SetPerspective(windowWidth / (float)windowHeight, NEAR_PLANE, FAR_PLANE);
 
     // View from above
@@ -361,6 +138,8 @@ int main(void)
 
     ImGui_ImplGlfwGL3_Init(window, true);
 
+    Logger& log = Logger::GetInstance();
+
     try
     {
         InitGraphics();
@@ -368,68 +147,20 @@ int main(void)
     }
     catch (const std::runtime_error& ex)
     {
-        DisplayError(ex.what(), "SSS - Runtime Error");
-        return -1;
+        log.Log(LogLevel::ERROR, ex.what());
+        return false;
     }
     catch (const std::exception& ex)
     {
-        DisplayError(ex.what(), "SSS - Error");
-        return -1;
+        log.Log(LogLevel::ERROR, ex.what());
+        return false;
     }
 
-    // Setup Window callbacks
-    glfwSetInputMode(window, GLFW_STICKY_KEYS, GL_TRUE);
-    glfwSetKeyCallback(window, OnKeyPressedCallback);
-    glfwSetMouseButtonCallback(window, OnMouseButtonClick);
-    glfwSetCursorPosCallback(window, OnCursorPosChangedCallback);
-    glfwSetWindowSizeCallback(window, OnResizeViewport);
-    glfwSetWindowCloseCallback(window, OnWindowClosing);
-
-    double simOldTime = glfwGetTime();
-    double simNewTime;
-    double simTickDiff;
-
-    simulationTime = 0.0f;
-
-    // Loop until the user closes the window
-    while (!glfwWindowShouldClose(window))
-    {
-        ImGui_ImplGlfwGL3_NewFrame();
-
-        // The simulationtime gets incremented every delta-t (0.01667s) = 60Hz by the simulation speed (simulationTick).
-        simNewTime = glfwGetTime();
-        simTickDiff = (simNewTime - simOldTime) / SIMULATION_DELTA;
-        simOldTime = simNewTime;
-        simulationTime += simTickDiff * simulationTick;
-
-        // We update as often as possible and also interpolate the simulationtime to get that extra bit of smoothness.
-        // Rendering is also done as often as possible
-        ProcessInput(simTickDiff);
-        Update(simulationTime);
-        Display();
-        DisplayUi();
-
-        // Display frame
-        glfwSwapBuffers(window);
-        fpsCounter.Tick();
-
-        glfwPollEvents();
-    }
-
-    ImGui_ImplGlfwGL3_Shutdown();
-
-    glfwTerminate();
-
-#ifdef _DEBUG
-    printMemTrackResult();
-    getchar();
-#endif
-    return 0;
+    return true;
 }
 
-/**
- * Sets up the rendering pipeline. Called once on start.
- */
+
+
 void InitGraphics()
 {
     Stopwatch sw;
@@ -484,12 +215,12 @@ void InitGraphics()
     sunLight->SetAttenuation(1.0f, 0.02f, 0.0f);
 
     // The scene holds and manages all objects to render
-    scene = new Scene();
+    scene = std::make_shared<Scene>();
     scene->SetCamera(camera);
     scene->AddLight(sunLight);
 
-    // The renderpipeline renders the objects
-    pipeline = new RenderPipeline(scene);
+    // The render pipeline renders the objects
+    pipeline = std::make_unique<RenderPipeline>(scene);
     pipeline->SetSize(windowWidth, windowHeight);
     pipeline->SupplyShaders(
         &shadowShader,
@@ -502,19 +233,7 @@ void InitGraphics()
     pipeline->Build();
 }
 
-Mesh* MakeLines(const std::vector<vec3>& vec)
-{
-    Mesh* m = new Mesh();
-    auto& verts = m->GetVertices();
-    verts = vec;
-    m->Create(GL_LINES, GL_STATIC_DRAW);
-    return m;
-}
 
-/**
- * Loads all models and populates the scene to be rendered. Called
- * once on program start.
- */
 void InitData()
 {
     Stopwatch sw;
@@ -593,29 +312,18 @@ void InitData()
     stars.modelMatrix = one * two * three * scale;
     stars.SetShader(&starShader);
 
-    circleMesh.CreateCircle();
-    orbits[0].SetMeshes(&circleMesh);
-    orbits[0].SetAffectedByLighting(false);
-    orbits[0].SetShadowCasting(false);
-    orbits[0].SetTextureUsage(false);
-    orbits[1] = orbits[2] = orbits[3] = orbits[4] = orbits[5] = orbits[6] = orbits[7] = orbits[0];
-    orbits[0].modelMatrix = glm::scale(glm::rotate(mercuryInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(mercuryInfo.distanceToParent, 0, mercuryInfo.distanceToParent));
-    orbits[1].modelMatrix = glm::scale(glm::rotate(venusInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(venusInfo.distanceToParent, 0, venusInfo.distanceToParent));
-    orbits[2].modelMatrix = glm::scale(glm::rotate(earthInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(earthInfo.distanceToParent, 0, earthInfo.distanceToParent));
-    orbits[3].modelMatrix = glm::scale(glm::rotate(marsInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(marsInfo.distanceToParent, 0, marsInfo.distanceToParent));
-    orbits[4].modelMatrix = glm::scale(glm::rotate(jupiterInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(jupiterInfo.distanceToParent, 0, jupiterInfo.distanceToParent));
-    orbits[5].modelMatrix = glm::scale(glm::rotate(saturnInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(saturnInfo.distanceToParent, 0, saturnInfo.distanceToParent));
-    orbits[6].modelMatrix = glm::scale(glm::rotate(uranusInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(uranusInfo.distanceToParent, 0, uranusInfo.distanceToParent));
-    orbits[7].modelMatrix = glm::scale(glm::rotate(neptuneInfo.orbitInclination, vec3(0, 0, 1)), glm::vec3(neptuneInfo.distanceToParent, 0, neptuneInfo.distanceToParent));
     float ringAlpha = 0.1f;
-    orbits[0].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[1].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[2].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[3].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[4].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[5].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[6].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
-    orbits[7].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
+    circleMesh.CreateCircle();
+    for (int i = 0; i < 8; ++i)
+    {
+        PlanetInfo& info = planetInfo[i + 1]; // offset by the sun
+        orbits[i].SetMeshes(&circleMesh);
+        orbits[i].SetAffectedByLighting(false);
+        orbits[i].SetShadowCasting(false);
+        orbits[i].SetTextureUsage(false);
+        orbits[i].modelMatrix = glm::scale(glm::rotate(info.orbitInclination, vec3(0, 0, 1)), glm::vec3(info.distanceToParent, 0, info.distanceToParent));
+        orbits[i].SetColor(vec4(0.3f, 0.3f, 0.3f, ringAlpha));
+    }
 
     // Sun is not affected by lighting (light source is inside the sun)
     // static modelmatrix in case i am removing the animation in Update()
@@ -670,36 +378,231 @@ void InitData()
     bodies[bEuropa].SetMeshes(&lowPolySphere);
     bodies[bEuropa].SetTexture(europaTex);
 
-    // Add the models to the scene
-    scene->AddModel(&bodies[bMercury]);
-    scene->AddModel(&bodies[bVenus]);
-    scene->AddModel(&bodies[bEarth]);
-    scene->AddModel(&bodies[bMars]);
-    scene->AddModel(&bodies[bJupiter]);
-    scene->AddModel(&bodies[bSaturn]);
-    scene->AddModel(&bodies[bUranus]);
-    scene->AddModel(&bodies[bNeptune]);
-    scene->AddModel(&saturnrings);
-    scene->AddModel(&bodies[bSun]);
-    scene->AddModel(&bodies[bMoon]);
-    scene->AddModel(&bodies[bIo]);
-    scene->AddModel(&bodies[bEuropa]);
-    scene->AddModel(&stars);
+    // Add the orbital bodies to the renderer
+    for(int i = bBegin; i < bEnd; ++i)
+    {
+        scene->AddModel(&bodies[i]);
+    }
 
     // Add the visual orbits to the renderer
     for (int i = 0; i < 8; ++i)
     {
         scene->AddModel(&orbits[i]);
     }
+
+    // Special cases
+    scene->AddModel(&saturnrings);
+    scene->AddModel(&stars);
 }
 
-/**
- * Routines responsible for rendering. Called once per frame.
- */
-void Display()
+
+void OnExit(GLFWwindow* window)
+{
+    ImGui_ImplGlfwGL3_Shutdown();
+}
+
+
+void OnWindowClosing(GLFWwindow* window)
+{
+    delete sunLight;
+}
+
+
+void OnResizeViewport(GLFWwindow* window, int width, int height)
+{
+    // 0 can occur on Win+D!
+    if (width <= 0 || height <= 0)
+        return;
+
+    windowWidth = width;
+    windowHeight = height;
+
+    glViewport(0, 0, width, height);
+    camera->SetPerspective(width / (float)height, NEAR_PLANE, FAR_PLANE);
+
+    pipeline->SetSize(width, height);
+}
+
+
+void OnKeyPressed(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    // on fn + [..] key is negative
+    if (key < 0)
+        return;
+
+    // Change simulation tick with 0 - 9 Keys
+    if (action == GLFW_PRESS && key >= GLFW_KEY_0 && key <= GLFW_KEY_9)
+    {
+        simulationTick = simSpeeds[key - GLFW_KEY_0];
+        return;
+    }
+
+    if (action == GLFW_PRESS || action == GLFW_REPEAT)
+        keyStates[key] = true;
+    else
+        keyStates[key] = false;
+}
+
+
+void OnCursorPosChanged(GLFWwindow* window, double x, double y)
+{
+    // This variable is a hack to prevent the initial camera jump when the cursor isn't caught yet
+    static bool caught_cursor = false;
+    // This variable is a hack to stop glfwSetCursorPos from triggering OnCursorPosChangedCallback() recursively.
+    // Maybe using GLFW_CURSOR_DISABLED is the correct approach?
+    static bool just_warped = false;
+
+    if (just_warped)
+    {
+        just_warped = false;
+        return;
+    }
+
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS)
+    {
+        int dx = (int)x - windowWidth / 2;
+        int dy = (int)y - windowHeight / 2;
+
+        if (caught_cursor)
+        {
+            camera->RotateYaw((float)dx);
+            camera->RotatePitch((float)-dy);
+        }
+
+        just_warped = true;
+        caught_cursor = true;
+        glfwSetCursorPos(window, windowWidth / 2, windowHeight / 2);
+    }
+    else
+    {
+        caught_cursor = false;
+    }
+}
+
+
+void OnMouseButtonClick(GLFWwindow* window, int button, int action, int mod)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        double x, y;
+        glfwGetCursorPos(window, &x, &y);
+        double nx = 2.0 * x / windowWidth - 1.0;
+        double ny = 1.0 - 2.0 * y / windowHeight;
+
+        glm::vec4 rayClip = glm::vec4(nx, ny, -1.0f, 1.0f);
+
+        glm::mat4 invProj = glm::inverse(camera->GetProjectionMatrix());
+        glm::vec4 rayView = invProj * rayClip;
+        rayView.z = -1.0f;
+        rayView.w = 0.0f;
+
+        glm::mat4 invView = glm::inverse(camera->GetViewMatrix());
+        glm::vec4 rayWorld4 = invView * rayView;
+        glm::vec3 rayWorld = glm::normalize(glm::vec3(rayWorld4.x, rayWorld4.y, rayWorld4.z));
+
+        DoPlanetSelection(camera->GetPosition(), rayWorld);
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_LEFT || button == GLFW_MOUSE_BUTTON_RIGHT)
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+        glfwSetCursorPosCallback(window, OnCursorPosChanged);
+    }
+}
+
+
+void ProcessInput(GLFWwindow* window, double dt)
+{
+    float incr = static_cast<float>(dt);
+
+    if (keyStates['w'] || keyStates['W'])
+    {
+        camera->Move(incr);
+    }
+    if (keyStates['a'] || keyStates['A'])
+    {
+        camera->Strafe(incr);
+    }
+    if (keyStates['s'] || keyStates['S'])
+    {
+        camera->Move(-incr);
+    }
+    if (keyStates['d'] || keyStates['D'])
+    {
+        camera->Strafe(-incr);
+    }
+    if (keyStates['t'] || keyStates['T'])
+    {
+        scene->EnableTriangleSorting(!scene->IsTriangleSortingEnabled());
+    }
+    if (keyStates[GLFW_KEY_F11])
+    {
+        keyStates[GLFW_KEY_F11] = false;
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        if (!isFullscreen)
+        {
+            isFullscreen = true;
+            prevWidth = windowWidth;
+            prevHeight = windowHeight;
+            glfwGetWindowPos(window, &prevX, &prevY);
+
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        }
+        else
+        {
+            isFullscreen = false;
+            glfwSetWindowMonitor(window, NULL, prevX, prevY, prevWidth, prevHeight, 0);
+        }
+    }
+    if (keyStates[GLFW_KEY_ESCAPE])
+    {
+        glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        glfwSetCursorPosCallback(window, 0);
+    }
+}
+
+
+void Update(double dt)
+{
+    ImGui_ImplGlfwGL3_NewFrame();
+
+    simulationTime += dt * simulationTick;
+    double time = simulationTime;
+
+    // Animate sun
+    float move = (float)(fmod(time, (double)sunInfo.selfRotationTime));
+    bodies[bSun].textureTransforms[1] = glm::translate(mat3(), vec2(move * 1.5, 0.0f));
+    bodies[bSun].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, sunInfo);
+
+    // Update the planets position
+    bodies[bMercury].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, mercuryInfo);
+    bodies[bVenus].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, venusInfo);
+    bodies[bEarth].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, earthInfo);
+    bodies[bMars].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, marsInfo);
+    bodies[bJupiter].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, jupiterInfo);
+    bodies[bSaturn].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, saturnInfo);
+    bodies[bUranus].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, uranusInfo);
+    bodies[bNeptune].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, neptuneInfo);
+
+    // Update the moons positions...
+    bodies[bIo].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, ioInfo, vec3(bodies[bJupiter].modelMatrix[3]));
+    bodies[bEuropa].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, europaInfo, vec3(bodies[bJupiter].modelMatrix[3]));
+    bodies[bMoon].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, moonInfo, vec3(bodies[bEarth].modelMatrix[3]));
+
+    // ... and the saturn ring
+    saturnrings.modelMatrix = PlanetMovementSystem::SimulateRing(time, saturnRing, vec3(bodies[bSaturn].modelMatrix[3]));
+}
+
+
+void Display(double dt)
 {
     scene->Optimize();
     pipeline->Render();
+    
+    DisplayUi();
+
+    fpsCounter.Tick();
 }
 
 int selectedBodyIndex = 3;
@@ -831,36 +734,6 @@ void DisplayUi()
     ImGui::Render();
 }
 
-/**
- * Routine responsible to calculate & update all objects state. => MVP matrix and other properties.
- * Called before rendering, once per frame, but with a time reference as parameter to be CPU speed independent.
- * @param time Number of elapsed simulation ticks. <SIMULATION_FREQ> ticks / s.
- */
-void Update(double time)
-{
-    // Animate sun
-    float move = (float)(fmod(time, (double)sunInfo.selfRotationTime));
-    bodies[bSun].textureTransforms[1] = glm::translate(mat3(), vec2(move * 1.5, 0.0f));
-    bodies[bSun].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, sunInfo);
-
-    // Update the planets position
-    bodies[bMercury].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, mercuryInfo);
-    bodies[bVenus].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, venusInfo);
-    bodies[bEarth].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, earthInfo);
-    bodies[bMars].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, marsInfo);
-    bodies[bJupiter].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, jupiterInfo);
-    bodies[bSaturn].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, saturnInfo);
-    bodies[bUranus].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, uranusInfo);
-    bodies[bNeptune].modelMatrix = PlanetMovementSystem::OrbitAroundSun(time, neptuneInfo);
-
-    // Update the moons positions...
-    bodies[bIo].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, ioInfo, vec3(bodies[bJupiter].modelMatrix[3]));
-    bodies[bEuropa].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, europaInfo, vec3(bodies[bJupiter].modelMatrix[3]));
-    bodies[bMoon].modelMatrix = PlanetMovementSystem::OrbitAroundParent(time, moonInfo, vec3(bodies[bEarth].modelMatrix[3]));
-
-    // ... and the saturn ring
-    saturnrings.modelMatrix = PlanetMovementSystem::SimulateRing(time, saturnRing, vec3(bodies[bSaturn].modelMatrix[3]));
-}
 
 void DoPlanetSelection(glm::vec3 rayOrigin, glm::vec3 rayDirection)
 {
